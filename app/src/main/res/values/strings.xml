@@ -2,7 +2,8 @@
     <string name="app_name">Document Viewer</string>
     <string name="home_heading">A little focus.\nA fresh page.</string>
     <string name="open_pdf">Open PDF</string>
-    <string name="no_pdf_open">A simple, private file viewer. No ads, no accounts and no data collection.</string>
+    <string name="no_pdf_open">A simple, private file viewer. No ads, no accounts and no data
+        collection.</string>
     <string name="recent_files">Recent files</string>
     <string name="page_format">Page %1$d of %2$d</string>
     <string name="cannot_open">Could not open this PDF.</string>
@@ -35,7 +36,7 @@
     <string name="footer_copyright">© %1$d Sahed Alom Sumit</string>
     <string name="more_apps">More apps by Sahed</string>
     <string name="make_default">Make default PDF viewer</string>
-    <string name="default_title">Your everyday PDF viewer</string>
-    <string name="default_message">Tap Choose PDF and select one of your documents. In Android’s app picker, choose Document Viewer, then tap Always. You can also do this by opening a PDF from Files.\n\nIf another app opens directly, clear its defaults in Settings → Apps, then try again. This app supports PDF documents.</string>
+    <string name="default_title">Make default PDF viewer</string>
+    <string name="default_message">Tap \"Choose PDF\" and select a document. In Android’s app picker, choose \"Document Viewer\", then tap \"Always\".\n\nIf a PDF opens without asking, go to \"Settings → Apps → your current PDF viewer → Open by default (or Set as default) → Clear defaults\". Return in the app and tap \"Choose PDF\" again.</string>
     <string name="not_now">Not now</string>
 </resources>

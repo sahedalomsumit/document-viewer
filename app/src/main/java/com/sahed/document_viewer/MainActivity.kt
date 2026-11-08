@@ -205,15 +205,22 @@ class MainActivity : AppCompatActivity() {
         val dialog = dialogBuilder().setTitle(R.string.default_title).setMessage(R.string.default_message)
             .setNegativeButton(R.string.not_now, null)
             .setPositiveButton("Choose PDF") { _, _ -> chooseDefaultPdf.launch(arrayOf("application/pdf")) }.create()
-        showAppDialog(dialog)
+        showAppDialog(dialog) {
+            (dialog.getButton(AlertDialog.BUTTON_POSITIVE).parent as? androidx.appcompat.widget.ButtonBarLayout)
+                ?.setAllowStacking(false)
+        }
     }
 
     internal fun isDefaultPdfViewer(): Boolean {
+        return resolvedPdfViewerPackage() == packageName
+    }
+
+    private fun resolvedPdfViewerPackage(): String? {
         val uri = Uri.parse("content://com.android.externalstorage.documents/document/primary%3ADownload%2Fdocument.pdf")
         val intent = Intent(Intent.ACTION_VIEW).setDataAndType(uri, "application/pdf")
             .addCategory(Intent.CATEGORY_DEFAULT)
         return packageManager.resolveActivity(intent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
-            ?.activityInfo?.packageName == packageName
+            ?.activityInfo?.packageName
     }
 
     private fun removeLegacyWelcome() {

@@ -270,7 +270,7 @@ class ReaderInstrumentedTest {
     @Test fun defaultPromptAppearsOnceAndCanBeReopenedFromMenu() {
         context.getSharedPreferences("onboarding", 0).edit().putBoolean("default_prompt_seen", false).commit()
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            val root = awaitWindow { it.findAccessibilityNodeInfosByText("Your everyday PDF viewer").isNotEmpty() }
+            val root = awaitWindow { it.findAccessibilityNodeInfosByText(context.getString(R.string.default_title)).isNotEmpty() }
             assertTrue(root.findAccessibilityNodeInfosByText("Not now").first().performAction(AccessibilityNodeInfo.ACTION_CLICK))
             scenario.recreate()
             scenario.onActivity {
@@ -280,6 +280,43 @@ class ReaderInstrumentedTest {
             }
             val reopened = awaitWindow { it.findAccessibilityNodeInfosByText("Choose PDF").isNotEmpty() }
             assertTrue(reopened.findAccessibilityNodeInfosByText("Not now").first().performAction(AccessibilityNodeInfo.ACTION_CLICK))
+        }
+    }
+
+    @Test fun defaultViewerButtonsShareOneRowWithoutSettings() {
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity {
+                it.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+                    .menu.performIdentifierAction(R.id.action_default, 0)
+            }
+            val root = awaitWindow { it.findAccessibilityNodeInfosByText("Choose PDF").isNotEmpty() }
+            assertTrue(root.findAccessibilityNodeInfosByText("Open settings").isEmpty())
+            assertTrue(root.findAccessibilityNodeInfosByText("Android does not provide").isEmpty())
+            val chooseBounds = android.graphics.Rect()
+            val cancelBounds = android.graphics.Rect()
+            root.findAccessibilityNodeInfosByText("Choose PDF").first { it.text?.toString() == "Choose PDF" }
+                .getBoundsInScreen(chooseBounds)
+            val cancel = root.findAccessibilityNodeInfosByText("Not now").first()
+            cancel.getBoundsInScreen(cancelBounds)
+            assertEquals(chooseBounds.centerY(), cancelBounds.centerY())
+            assertTrue(cancel.performAction(AccessibilityNodeInfo.ACTION_CLICK))
+        }
+    }
+
+    @Test fun defaultViewerDescriptionPreservesQuotesAndParagraphs() {
+        val expected = "Tap \"Choose PDF\" and select a document. In Android’s app picker, choose \"Document Viewer\", then tap \"Always\".\n\n" +
+            "If a PDF opens without asking, go to \"Settings → Apps → your current PDF viewer → Open by default (or Set as default) → Clear defaults\". Return in the app and tap \"Choose PDF\" again."
+        assertEquals(expected, context.getString(R.string.default_message))
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity {
+                it.findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.toolbar)
+                    .menu.performIdentifierAction(R.id.action_default, 0)
+            }
+            val root = awaitWindow {
+                it.findAccessibilityNodeInfosByText("Tap \"Choose PDF\"").any { node -> node.text?.toString() == expected }
+            }
+            assertTrue(root.findAccessibilityNodeInfosByText("Not now").first()
+                .performAction(AccessibilityNodeInfo.ACTION_CLICK))
         }
     }
 
