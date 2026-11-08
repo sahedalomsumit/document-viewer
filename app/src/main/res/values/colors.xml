@@ -1,0 +1,13 @@
+<resources>
+    <!-- Shared Emerald design tokens from money-tracker-app. -->
+    <color name="emerald">#72D4B3</color>
+    <color name="on_emerald">#102F28</color>
+    <color name="deep_green">#1B3B34</color>
+    <color name="background">#0A0F0D</color>
+    <color name="surface_1">#111A17</color>
+    <color name="surface_2">#182420</color>
+    <color name="surface_3">#1F2E29</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#AEC4BD</color>
+    <color name="error">#F44336</color>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_open"
+        android:title="@string/open_pdf"
+        app:showAsAction="never" />
+    <item android:id="@+id/action_home" android:title="Recent files" app:showAsAction="never" />
+    <item android:id="@+id/action_jump" android:title="Go to page" app:showAsAction="never" />
+    <item android:id="@+id/action_fit" android:title="Fit page" app:showAsAction="never" />
+    <item android:id="@+id/action_share" android:title="Share original PDF" app:showAsAction="never" />
+    <item android:id="@+id/action_export" android:title="Save marked-up copy" android:icon="@drawable/ic_save" app:showAsAction="ifRoom" />
+    <item android:id="@+id/action_default" android:title="@string/make_default" app:showAsAction="never" />
+    <item android:id="@+id/action_more_apps" android:title="@string/more_apps" app:showAsAction="never" />
+</menu>

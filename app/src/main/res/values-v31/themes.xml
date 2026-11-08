@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.DocumentViewer" parent="Theme.DocumentViewer.Base">
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/logo_splash</item>
+        <item name="android:windowSplashScreenBackground">@color/background</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+    </style>
+</resources>
