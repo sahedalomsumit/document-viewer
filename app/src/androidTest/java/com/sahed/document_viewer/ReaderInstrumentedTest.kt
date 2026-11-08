@@ -15,6 +15,8 @@ import android.view.View
 import android.view.KeyEvent
 import android.widget.TextView
 import androidx.core.content.FileProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -115,6 +117,27 @@ class ReaderInstrumentedTest {
                 check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
             }
         } finally { bitmap.recycle() }
+    }
+
+    @Test fun systemBarsAndCutoutsHaveSafePadding() {
+        org.junit.Assume.assumeTrue(android.os.Build.VERSION.SDK_INT >= 35)
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            await(scenario) {
+                ViewCompat.getRootWindowInsets(it.findViewById<View>(R.id.toolbar)) != null
+            }
+            scenario.onActivity { activity ->
+                val root = activity.findViewById<View>(R.id.toolbar).parent as View
+                val insets = checkNotNull(ViewCompat.getRootWindowInsets(root))
+                val safe = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+                repeat(2) {
+                    ViewCompat.dispatchApplyWindowInsets(root, insets)
+                    assertEquals(safe.left, root.paddingLeft)
+                    assertEquals(safe.top, root.paddingTop)
+                    assertEquals(safe.right, root.paddingRight)
+                    assertEquals(safe.bottom, root.paddingBottom)
+                }
+            }
+        }
     }
 
     @Test fun phoneLayoutPortraitAndLandscape() {

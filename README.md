@@ -4,7 +4,7 @@ An offline Android PDF reader with drawing and text tools. No ads, accounts, or 
 
 - **Android:** 7.0 (API 24) or later
 - **Package:** `com.sahed.document_viewer`
-- **Current version:** 1.0.0
+- **Current version:** 1.0.1
 - **Google Play listing copy:** [play-description.md](play-description.md)
 
 ## ✨ Features
@@ -41,7 +41,7 @@ DM Sans is bundled from Google Fonts under the SIL Open Font License (see `app/s
 
 ## 🛠️ Build
 
-Use JDK 17 and an Android SDK with platform 34 installed. Configure your local SDK location through Android Studio or `local.properties`; use the included Gradle wrapper.
+Use JDK 17 and an Android SDK with platform 36 installed. The app targets API 36 and still supports Android 7.0 (API 24) or later. Configure your local SDK location through Android Studio or `local.properties`; use the included Gradle wrapper.
 
 ```powershell
 .\gradlew.bat :app:assembleDebug :app:lintDebug

@@ -17,10 +17,13 @@ import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -93,8 +96,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (android.os.Build.VERSION.SDK_INT >= 35) enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        if (android.os.Build.VERSION.SDK_INT >= 35) {
+            // API 36 enforces edge-to-edge. Keep controls clear of system bars and cutouts.
+            ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+                val safe = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+                view.setPadding(safe.left, safe.top, safe.right, safe.bottom)
+                insets
+            }
+            ViewCompat.requestApplyInsets(binding.root)
+        }
         if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
             binding.controls.orientation = android.widget.LinearLayout.HORIZONTAL
             binding.markupTools.layoutParams = android.widget.LinearLayout.LayoutParams(
@@ -103,7 +116,7 @@ class MainActivity : AppCompatActivity() {
                 android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
         }
         if (android.os.Build.VERSION.SDK_INT >= 27) {
-            window.navigationBarColor = getColor(R.color.background)
+            if (android.os.Build.VERSION.SDK_INT < 35) window.navigationBarColor = getColor(R.color.background)
             androidx.core.view.WindowCompat.getInsetsController(window, binding.root)
                 .isAppearanceLightNavigationBars = false
         }
