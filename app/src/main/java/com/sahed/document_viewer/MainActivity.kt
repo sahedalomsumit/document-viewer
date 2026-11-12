@@ -116,7 +116,6 @@ class MainActivity : AppCompatActivity() {
                 android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
         }
         if (android.os.Build.VERSION.SDK_INT >= 27) {
-            if (android.os.Build.VERSION.SDK_INT < 35) window.navigationBarColor = getColor(R.color.background)
             androidx.core.view.WindowCompat.getInsetsController(window, binding.root)
                 .isAppearanceLightNavigationBars = false
         }
@@ -156,11 +155,11 @@ class MainActivity : AppCompatActivity() {
         }
         listOf(binding.openButton, binding.readTool,
             binding.penTool, binding.textTool, binding.undoTool).forEach(DesignSystem::bouncyPress)
-        binding.openButton.setOnClickListener { if (!busy) openPdf.launch(arrayOf("application/pdf")) }
+        binding.openButton.setOnClickListener { if (!busy) openPdf.launch(DocumentFormat.mimeTypes) }
         binding.toolbar.setOnMenuItemClickListener {
             if (busy) return@setOnMenuItemClickListener true
             when (it.itemId) {
-                R.id.action_open -> openPdf.launch(arrayOf("application/pdf"))
+                R.id.action_open -> openPdf.launch(DocumentFormat.mimeTypes)
                 R.id.action_home -> confirmDiscard { clearDocument(); showHome() }
                 R.id.action_jump -> jumpToPage()
                 R.id.action_fit -> currentPageView()?.fitToView()
@@ -296,16 +295,37 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             setBusy(true)
             var copied: File? = null
+            var original: File? = null
             try {
                 val name = withContext(Dispatchers.IO) { displayName(uri) }
+                val format = withContext(Dispatchers.IO) {
+                    DocumentFormat.from(name, contentResolver.getType(uri))
+                        ?: error("Unsupported document format")
+                }
                 // A local copy also works with document providers whose descriptors cannot seek.
-                copied = withContext(Dispatchers.IO) {
-                    val file = File.createTempFile("document-", ".pdf", cacheDir)
-                    try {
-                        val input = contentResolver.openInputStream(uri) ?: error("Unavailable document")
-                        input.use { stream -> file.outputStream().use { out -> stream.copyTo(out) } }
-                        file
-                    } catch (e: Exception) { file.delete(); throw e }
+                withContext(Dispatchers.IO) {
+                    val file = File.createTempFile("document-", ".${format.extension}", cacheDir)
+                    original = file
+                    val input = contentResolver.openInputStream(uri) ?: error("Unavailable document")
+                    input.use { stream -> file.outputStream().use { out ->
+                        val buffer = ByteArray(8192)
+                        var total = 0L
+                        while (true) {
+                            val count = stream.read(buffer)
+                            if (count < 0) break
+                            total += count
+                            require(format == DocumentFormat.PDF || total <= OfficePreview.MAX_INPUT_BYTES) {
+                                "Office file is too large (maximum 32 MB)."
+                            }
+                            out.write(buffer, 0, count)
+                        }
+                    } }
+                    copied = if (format == DocumentFormat.PDF) file else {
+                        File.createTempFile("office-preview-", ".pdf", cacheDir).also {
+                            copied = it
+                            OfficePreview.convert(file, format, it)
+                        }
+                    }
                 }
                 // Validate before replacing the current document or its unsaved marks.
                 withContext(Dispatchers.IO) {
@@ -315,21 +335,26 @@ class MainActivity : AppCompatActivity() {
                 }
                 clearDocument()
                 session.source = copied
+                session.originalFile = original
+                session.format = format
                 session.title = name
                 session.originalUri = uri.toString()
-                attachRenderer(copied)
+                attachRenderer(checkNotNull(copied))
                 recentStore.add(name, uri)
                 recentAdapter.update(recentStore.list())
                 updateRecentState()
                 showReader()
+                if (format != DocumentFormat.PDF) message(getString(R.string.office_preview_notice))
                 val rememberedPage = recentStore.list().find { it.uri == uri.toString() }?.page ?: 0
                 showPage(rememberedPage.coerceIn(0, (pdfRenderer?.pageCount ?: 1) - 1))
             } catch (e: CancellationException) {
                 if (copied != session.source) copied?.delete()
+                if (original != session.originalFile) original?.delete()
                 throw e
             } catch (_: Exception) {
                 if (copied != session.source) copied?.delete()
-                message("Could not open this PDF. It may be password-protected, damaged, or unavailable.")
+                if (original != session.originalFile) original?.delete()
+                message(getString(R.string.cannot_open))
             } finally { setBusy(false) }
         }
     }
@@ -415,7 +440,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun jumpToPage() {
-        val count = pdfRenderer?.pageCount ?: return message("Open a PDF first.")
+        val count = pdfRenderer?.pageCount ?: return message("Open a document first.")
         val input = EditText(this).apply {
             inputType = InputType.TYPE_CLASS_NUMBER
             hint = "1–$count"
@@ -474,7 +499,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun confirmExport() {
-        if (session.source == null) return message("Open a PDF first.")
+        if (session.source == null) return message("Open a document first.")
         val dialog = dialogBuilder().setTitle("Save marked-up copy")
             .setMessage("Creates a flattened PDF with your drawings and added text. Pages become images: searchable text, links, forms, and accessibility tags are not preserved. The original stays unchanged.")
             .setNegativeButton("Cancel", null).setPositiveButton("Create copy") { _, _ -> exportCopy() }.create()
@@ -528,16 +553,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun shareOriginal() {
-        val file = session.source ?: return message("Open a PDF first.")
+        val file = session.originalFile ?: session.source ?: return message("Open a document first.")
         if (session.dirty) message("Sharing the original without marks. Use Save marked-up copy to include them.")
         val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
         val share = Intent(Intent.ACTION_SEND).apply {
-            type = "application/pdf"
+            type = session.format.mimeType
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            clipData = android.content.ClipData.newRawUri("PDF", uri)
+            clipData = android.content.ClipData.newRawUri(session.title, uri)
         }
-        try { startActivity(Intent.createChooser(share, "Share PDF")) }
+        try { startActivity(Intent.createChooser(share, "Share document")) }
         catch (_: Exception) { message("No sharing app is available.") }
     }
 
@@ -549,6 +574,7 @@ class MainActivity : AppCompatActivity() {
         binding.markupTools.visibility = View.VISIBLE
         binding.toolHint.visibility = View.VISIBLE
         binding.toolbar.title = session.title
+        binding.toolbar.subtitle = if (session.format == DocumentFormat.PDF) null else getString(R.string.office_preview)
         binding.toolbar.setNavigationIcon(R.drawable.ic_back)
         updateMenu(true)
         DesignSystem.entrance(binding.viewerContainer)
@@ -614,7 +640,7 @@ class MainActivity : AppCompatActivity() {
     private fun displayName(uri: Uri): String {
         return contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use {
             if (it.moveToFirst()) it.getString(0) else null
-        } ?: "Document.pdf"
+        } ?: uri.lastPathSegment ?: "Document"
     }
 
     private fun clearDocument() {
@@ -626,7 +652,10 @@ class MainActivity : AppCompatActivity() {
         pageLoading = false
         closeRenderer()
         // A shared cache file must remain available to its receiving app.
+        if (session.source != session.originalFile) session.source?.delete()
         session.source = null
+        session.originalFile = null
+        session.format = DocumentFormat.PDF
         session.page = 0
         session.title = ""
         session.originalUri = null

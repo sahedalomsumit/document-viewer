@@ -1,24 +1,26 @@
 <resources>
     <string name="app_name">Document Viewer</string>
     <string name="home_heading">A little focus.\nA fresh page.</string>
-    <string name="open_pdf">Open PDF</string>
+    <string name="open_pdf">Open document</string>
     <string name="no_pdf_open">A simple, private file viewer. No ads, no accounts and no data
         collection.</string>
     <string name="recent_files">Recent files</string>
     <string name="page_format">Page %1$d of %2$d</string>
-    <string name="cannot_open">Could not open this PDF.</string>
+    <string name="cannot_open">Could not open this document. It may be password-protected, damaged, unavailable, or unsupported. Office previews are limited to 32 MB and 400 pages.</string>
+    <string name="office_preview">Simplified Office preview</string>
+    <string name="office_preview_notice">Text preview only. Saved copies are PDFs, not Office files.</string>
     <string name="library">Your library</string>
     <string name="home_subtitle">A calm space for your documents.</string>
-    <string name="tools_summary">Read · Draw · Text</string>
+    <string name="tools_summary">PDF · Word · PowerPoint · Excel</string>
     <string name="tool_read">Read</string>
     <string name="tool_draw">Draw</string>
     <string name="tool_text">Text</string>
     <string name="tool_undo">Undo</string>
     <string name="recent_empty">Nothing here yet</string>
-    <string name="recent_empty_detail">Open your first PDF and find it here next time.</string>
-    <string name="recent_progress">PDF · Page %1$d of %2$d</string>
+    <string name="recent_empty_detail">Open your first document and find it here next time.</string>
+    <string name="recent_progress">%1$s · Page %2$d of %3$d</string>
     <string name="continue_reading">CONTINUE READING</string>
-    <string name="reader_hint">Scroll through your PDF · Pinch or double-tap to zoom</string>
+    <string name="reader_hint">Scroll through your document · Pinch or double-tap to zoom</string>
     <string name="text_hint">Tap a page to add text · Use two fingers to scroll</string>
     <string name="draw_hint">Draw with one finger · Use two fingers to move or zoom</string>
     <string name="jump_hint">Go to page</string>

@@ -25,9 +25,10 @@ class RecentAdapter(
 
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = items[position]
+        val label = DocumentFormat.from(item.name)?.label ?: "Document"
         holder.name.text = item.name
         holder.detail.text = if (item.pageCount > 0)
-            holder.itemView.context.getString(R.string.recent_progress, item.page + 1, item.pageCount) else "PDF · Stored on your device"
+            holder.itemView.context.getString(R.string.recent_progress, label, item.page + 1, item.pageCount) else "$label · Stored on your device"
         holder.itemView.setOnClickListener { onClick(item) }
     }
 

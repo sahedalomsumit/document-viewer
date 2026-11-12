@@ -6,6 +6,8 @@ import java.io.File
 // Survives rotations without keeping an Activity or an open renderer alive.
 class ReaderSession : ViewModel() {
     var source: File? = null
+    var originalFile: File? = null
+    var format = DocumentFormat.PDF
     var title = ""
     var page = 0
     val markup = mutableMapOf<Int, MutableList<ZoomImageView.Stroke>>()
@@ -16,6 +18,7 @@ class ReaderSession : ViewModel() {
 
     override fun onCleared() {
         pages.clear()
+        if (source != originalFile) source?.delete()
         pendingExport?.delete()
     }
 }

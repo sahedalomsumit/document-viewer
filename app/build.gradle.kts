@@ -17,8 +17,8 @@ android {
         applicationId = "com.sahed.document_viewer"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -61,6 +61,18 @@ android {
     }
 }
 
+// POI's optional desktop buffer cleaner uses MethodHandle.invokeExact (API 26+).
+// Replace just that platform hook; binary readers use in-memory streams on Android.
+val officeLibraries = configurations.create("officeLibraries")
+val androidPoi = tasks.register<Jar>("androidPoi") {
+    archiveFileName.set("poi-android.jar")
+    destinationDirectory.set(layout.buildDirectory.dir("office-libs"))
+    val core = provider { officeLibraries.files.single { it.name == "poi-5.4.1.jar" } }
+    from(core.map { zipTree(it) }) {
+        exclude("org/apache/poi/poifs/nio/CleanerUtil*.class")
+    }
+}
+
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
@@ -69,6 +81,11 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
     implementation("androidx.dynamicanimation:dynamicanimation:1.0.0")
+    // Only the binary Office readers are used; OOXML is read with Android's XML parser.
+    add(officeLibraries.name, "org.apache.poi:poi:5.4.1")
+    add(officeLibraries.name, "org.apache.poi:poi-scratchpad:5.4.1")
+    implementation(files(androidPoi))
+    implementation(files(provider { officeLibraries.files.filter { it.name != "poi-5.4.1.jar" } }))
     androidTestImplementation("androidx.test:runner:1.6.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
 }

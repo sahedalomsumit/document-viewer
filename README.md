@@ -1,6 +1,6 @@
 # 📄 Document Viewer
 
-An offline Android PDF reader with drawing and text tools. No ads, accounts, or data collection.
+An offline Android document reader with drawing and text tools. No ads, accounts, or data collection.
 
 - **Android:** 7.0 (API 24) or later
 - **Package:** `com.sahed.document_viewer`
@@ -9,21 +9,25 @@ An offline Android PDF reader with drawing and text tools. No ads, accounts, or 
 
 ## ✨ Features
 
-- Open PDFs from the Android file picker or compatible apps.
+- Open PDF, Word (.doc/.docx), PowerPoint (.ppt/.pptx), and Excel (.xls/.xlsx) files from the Android file picker or compatible apps.
 - Scroll continuously, pinch or double-tap to zoom, and jump to a page.
 - Resume reading from your last page, with a continue-reading card and progress for up to 12 recent documents.
 - Draw on pages, place typed text, and undo marks.
 - Save a separate marked-up PDF without changing the original.
 - Read in a dark, emerald-accented interface with bundled DM Sans typography.
 
-Despite its name, Document Viewer currently supports **PDF files only**, not Word documents, spreadsheets, or presentations. The Android app does not request internet permission; developer links open in an external app.
+Office files open as **simplified text previews**, generated entirely offline. Original formatting, images, charts, embedded objects, and animations are not reproduced. Word text is reflowed; modern presentations retain slide order, while legacy .ppt files show extracted text in record order. Worksheets show cell addresses and values (dates and numbers may be unformatted); formulas use stored results when available in .xlsx or show formula text, and are never recalculated. Macros are never executed and external links are never fetched. Encrypted Office files are not supported. Office previews are limited to 32 MiB input, bounded XML/text content, and 400 generated pages; documents exceeding these limits are rejected rather than silently truncated.
+
+The Android app does not request internet permission; developer links open in an external app.
 
 ## 📖 Using the app
 
-1. Tap **Open PDF** and choose a document, or open a PDF from Files with Document Viewer.
+1. Tap **Open document** and choose a supported document, or open it from Files with Document Viewer.
 2. Scroll to read. Pinch or double-tap to zoom, or use the page-jump control.
 3. Select **Draw** or **Text** to mark a page. While drawing, use two fingers to move or zoom. Select **Read** to return to reading, or **Undo** to remove the last mark on the current page.
 4. Export a marked-up copy before leaving the document; unsaved marks are discarded when you leave.
+
+Office previews support the same page navigation, zoom, reading progress, drawing, and text tools. Export always creates a PDF of the preview, not an edited Office file. **Share original document** shares the unchanged Office file, not the generated preview.
 
 **Export limitations:** Marked-up copies are flattened into page images. Searchable text, links, forms, and accessibility tags are not preserved. Password-protected, damaged, or unavailable PDFs may not open.
 
@@ -60,6 +64,8 @@ Connect an Android device or start an emulator before running:
 ```
 
 Tests use the separate `com.sahed.document_viewer.testbed` app, so Gradle cannot replace or uninstall your normal app or reset its recent-file history. Coverage includes page navigation/resume, rotation with annotations, undo, invalid PDFs, bitmap cache ownership, annotation rendering, zoom/pan bounds, export, developer link destinations, rounded branding, footer metadata, heart animation lifecycle, and the one-time default-viewer prompt. Results: `app/build/reports/androidTests/connected/`.
+
+Office regression tests cover all six Office extensions, text pagination, presentation ordering, spreadsheet cell values, XML DTD rejection, invalid packages, and keeping the original file across rotation. Legacy readers use Apache POI; its optional desktop buffer-cleaner hook is replaced with an Android-safe unsupported-platform implementation to retain API 24 support. Desktop graphics APIs are not used.
 
 ## 🚀 Signed release
 
